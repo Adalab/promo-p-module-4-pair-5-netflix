@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const movies = require('./data/movies.json');
+const users = require('./data/users.json');
 
 // create and config server
 const server = express();
@@ -12,7 +13,8 @@ const serverPort = 4000;
 server.listen(serverPort, () => {
   console.log(`Server listening at http://localhost:${serverPort}`);
 });
-//En point
+//End points:
+//este recibe la petición del fetch de api-movies
 server.get('/movies', (req, res) => {
   const response = movies;
   console.log(movies);
@@ -52,7 +54,26 @@ server.get('/movies', (req, res) => {
   );
 });
 
-server.post('/login', (req, res) => {});
+//este recibe la petición del fetch de api-user
+server.post('/login', (req, res) => {
+  console.log(req.body);
+  const userFound = users.find(
+    (user) =>
+      user.email === req.body.email && user.password === req.body.password
+  );
+  console.log(userFound);
+  if (userFound !== undefined) {
+    res.json({
+      success: true,
+      userId: userFound.id,
+    });
+  } else {
+    res.json({
+      success: false,
+      errorMessage: 'Usuaria/o no encontrada/o',
+    });
+  }
+});
 
 const staticServerPathWeb = './src/public-react'; // En esta carpeta ponemos los ficheros estáticos. Ruta correcta? public o public-react?
 server.use(express.static(staticServerPathWeb));
