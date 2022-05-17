@@ -6,16 +6,27 @@ const movies = require('./data/movies.json');
 const server = express();
 server.use(cors());
 server.use(express.json());
+server.set('view engine', 'ejs');
 
 // init express aplication
 const serverPort = 4000;
 server.listen(serverPort, () => {
   console.log(`Server listening at http://localhost:${serverPort}`);
 });
-//En point
+//Endpoint
+
+server.get('/movie/:movieId', (req, res) => {
+  console.log(req.params);
+
+  const foundMovie = movies.find(
+    (eachMovie) => eachMovie.id === req.params.movieId
+  );
+  res.render('movie', foundMovie);
+  console.log(foundMovie);
+});
+
 server.get('/movies', (req, res) => {
   const response = movies;
-  console.log(movies);
   const genderFilterParam = req.query.gender ? req.query.gender : '';
   console.log(genderFilterParam);
   const sortParam = req.query.sort;
@@ -59,3 +70,6 @@ server.use(express.static(staticServerPathWeb));
 
 const staticServerPathImages = './src/public-movies-images'; // En esta carpeta ponemos los ficheros estáticos. Ruta correcta? public o public-react?
 server.use(express.static(staticServerPathImages));
+
+const staticServerStyles = './src/public-styles'; // En esta carpeta ponemos los ficheros estáticos. Ruta correcta? public o public-react?
+server.use(express.static(staticServerStyles));
