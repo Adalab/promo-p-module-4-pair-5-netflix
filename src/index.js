@@ -1,12 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const movies = require('./data/movies.json');
+const Database = require('better-sqlite3');
 
 // create and config server
 const server = express();
 server.use(cors());
 server.use(express.json());
 server.set('view engine', 'ejs');
+const db = new Database('./src/db/database.db', { verbose: console.log });
 
 // init express aplication
 const serverPort = 4000;
@@ -25,7 +27,24 @@ server.get('/movie/:movieId', (req, res) => {
   console.log(foundMovie);
 });
 
+// creamos el endpoint /users de tipo GET
+
 server.get('/movies', (req, res) => {
+  const sort = req.query.sort;
+  if (req.query.gender !== '') {
+    const query = db.prepare(
+      `SELECT * FROM movies WHERE gender = ? ORDER BY name ${sort}`
+    );
+    const movies = query.all(req.query.gender);
+    res.json(movies);
+  } else {
+    const query = db.prepare(`SELECT * FROM movies ORDER BY name ${sort}`);
+    const movies = query.all();
+    res.json(movies);
+  }
+});
+
+/* server.get('/movies', (req, res) => {
   const response = movies;
   const genderFilterParam = req.query.gender ? req.query.gender : '';
   console.log(genderFilterParam);
@@ -61,7 +80,7 @@ server.get('/movies', (req, res) => {
         }
       })
   );
-});
+}); */
 
 server.post('/login', (req, res) => {});
 
