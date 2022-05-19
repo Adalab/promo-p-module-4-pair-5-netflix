@@ -84,6 +84,24 @@ server.get('/movies', (req, res) => {
 
 server.post('/login', (req, res) => {});
 
+server.post('/sign-up', (req, res) => {
+  //antes de insertar a la usuaria en la base de datos, hacemos un select para comprobar si ya existe.
+  const query = db.prepare('INSERT INTO users (email, password) VALUES (?, ?)');
+
+  const result = query.run(req.body.email, req.body.password);
+  if (result.changes === 1) {
+    res.json({
+      success: true,
+      userId: result.lastInsertRowid,
+    });
+  } else {
+    res.json({
+      success: false,
+      errorMessage: 'No se ha podido registrar',
+    });
+  }
+});
+
 const staticServerPathWeb = './src/public-react'; // En esta carpeta ponemos los ficheros estáticos. Ruta correcta? public o public-react?
 server.use(express.static(staticServerPathWeb));
 
