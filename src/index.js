@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const movies = require('./data/movies.json');
 const Database = require('better-sqlite3');
+const users = require('./data/users.json');
 
 // create and config server
 const server = express();
@@ -29,6 +30,8 @@ server.get('/movie/:movieId', (req, res) => {
 
 // creamos el endpoint /users de tipo GET
 
+//End points:
+//este recibe la petición del fetch de api-movies
 server.get('/movies', (req, res) => {
   const sort = req.query.sort;
   if (req.query.gender !== '') {
@@ -82,7 +85,26 @@ server.get('/movies', (req, res) => {
   );
 }); */
 
-server.post('/login', (req, res) => {});
+//este recibe la petición del fetch de api-user
+server.post('/login', (req, res) => {
+  console.log(req.body);
+  const userFound = users.find(
+    (user) =>
+      user.email === req.body.email && user.password === req.body.password
+  );
+  console.log(userFound);
+  if (userFound !== undefined) {
+    res.json({
+      success: true,
+      userId: userFound.id,
+    });
+  } else {
+    res.json({
+      success: false,
+      errorMessage: 'Usuaria/o no encontrada/o',
+    });
+  }
+});
 
 server.post('/sign-up', (req, res) => {
   //antes de insertar a la usuaria en la base de datos, hacemos un select para comprobar si ya existe.
