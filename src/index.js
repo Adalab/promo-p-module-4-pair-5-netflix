@@ -1,14 +1,18 @@
+// import libraries
 const express = require('express');
 const cors = require('cors');
-const movies = require('./data/movies.json');
 const Database = require('better-sqlite3');
-const users = require('./data/users.json');
 
-// create and config server
+// set up server
 const server = express();
 server.use(cors());
 server.use(express.json());
 server.set('view engine', 'ejs');
+
+// data from .json (first exercises)
+const users = require('./data/users.json');
+const movies = require('./data/movies.json');
+// data (from database)
 const db = new Database('./src/db/database.db', { verbose: console.log });
 
 // init express aplication
@@ -16,7 +20,8 @@ const serverPort = 4000;
 server.listen(serverPort, () => {
   console.log(`Server listening at http://localhost:${serverPort}`);
 });
-//Endpoint
+
+//Endpoints:
 
 server.get('/movie/:movieId', (req, res) => {
   console.log(req.params);
@@ -47,7 +52,9 @@ server.get('/movies', (req, res) => {
   }
 });
 
-/* server.get('/movies', (req, res) => {
+/* cuando los datos los cogía de un json en lugar de la base de datos
+
+  server.get('/movies', (req, res) => {
   const response = movies;
   const genderFilterParam = req.query.gender ? req.query.gender : '';
   console.log(genderFilterParam);
@@ -124,11 +131,12 @@ server.post('/sign-up', (req, res) => {
   }
 });
 
-const staticServerPathWeb = './src/public-react'; // En esta carpeta ponemos los ficheros estáticos. Ruta correcta? public o public-react?
+//static routes:
+const staticServerPathWeb = './src/public-react';
 server.use(express.static(staticServerPathWeb));
 
-const staticServerPathImages = './src/public-movies-images'; // En esta carpeta ponemos los ficheros estáticos. Ruta correcta? public o public-react?
+const staticServerPathImages = './src/public-movies-images';
 server.use(express.static(staticServerPathImages));
 
-const staticServerStyles = './src/public-styles'; // En esta carpeta ponemos los ficheros estáticos. Ruta correcta? public o public-react?
+const staticServerStyles = './src/public-styles';
 server.use(express.static(staticServerStyles));
