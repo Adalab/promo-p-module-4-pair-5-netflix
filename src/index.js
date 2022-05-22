@@ -11,9 +11,10 @@ server.use(express.json());
 // set up EJS (template engine/motor de plantillas) to create dinamic server. Also necessary to create views/ folder to create the templates (movie.ejs in this case).
 server.set('view engine', 'ejs');
 
-// data from .json (first exercises)
-const users = require('./data/users.json');
-const movies = require('./data/movies.json');
+// data from .json (first exercises), not being used anymore. Could erase src/data folder.
+//const users = require('./data/users.json');
+//const movies = require('./data/movies.json');
+
 // data (from database)
 const db = new Database('./src/db/database.db', { verbose: console.log });
 
@@ -29,11 +30,13 @@ server.listen(serverPort, () => {
 //it is not related to a fetch in front-end. to see each movie, go to the route http://localhost:4000/movie/1 (or 2, 3, 4)
 server.get('/movie/:movieId', (req, res) => {
   console.log(req.params);
-  const foundMovie = movies.find(
+  /* const foundMovie = movies.find(
     (eachMovie) => eachMovie.id === req.params.movieId
-  );
+  ); */
+  const query = db.prepare(`SELECT * FROM movies WHERE id = ?`);
+  const foundMovie = query.get(req.params.movieId);
   res.render(
-    'movie' /* route to the specific template inside views */,
+    'movie', //route to the specific template inside views
     foundMovie
   );
   console.log(foundMovie);
@@ -98,10 +101,14 @@ server.get('/movies', (req, res) => {
 //receives parameters from fetch in web/src/services/api-user (sendLoginToApi)
 server.post('/login', (req, res) => {
   console.log(req.body);
-  const userFound = users.find(
+  /*   const userFound = users.find(
     (user) =>
       user.email === req.body.email && user.password === req.body.password
+  ); */
+  const query = db.prepare(
+    `SELECT * FROM users WHERE email= ? AND password = ?`
   );
+  const userFound = query.get(req.body.email, req.body.password);
   console.log(userFound);
   if (userFound !== undefined) {
     res.json({
@@ -118,10 +125,14 @@ server.post('/login', (req, res) => {
 
 server.post('/sign-up', (req, res) => {
   //antes de insertar a la usuaria en la base de datos, hacemos un select para comprobar si ya existe.
-  const query = db.prepare('INSERT INTO users (email, password) VALUES (?, ?)');
-
-  const result = query.run(req.body.email, req.body.password);
-  if (result.changes === 1) {
+  const query1 = db.prepare(`SELECT * FROM users WHERE email =  ?`);
+  const userFound = query1.get(req.body.email);
+  if (userFound === undefined) {
+    const query2 = db.prepare(
+      'INSERT INTO users (email, password) VALUES (?, ?)'
+    );
+    const result = query2.run(req.body.email, req.body.password);
+    console.log(result);
     res.json({
       success: true,
       userId: result.lastInsertRowid,
@@ -129,9 +140,13 @@ server.post('/sign-up', (req, res) => {
   } else {
     res.json({
       success: false,
-      errorMessage: 'No se ha podido registrar',
+      errorMessage: 'Usuaria ya existente',
     });
   }
+});
+
+server.post('/profile', (req, res) => {
+  console.log(req.body.name);
 });
 
 //static servers set up:

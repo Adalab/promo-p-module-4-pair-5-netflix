@@ -15,7 +15,7 @@ import ls from '../services/local-storage';
 
 const App = () => {
   // state: user
-  const [userId, setUserId] = useState(ls.get('userId', []));
+  const [userId, setUserId] = useState('');
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [userPassword, setUserPassword] = useState('');
@@ -52,7 +52,7 @@ const App = () => {
   useEffect(() => {
     if (userId !== '') {
       apiUser.getProfileFromApi(userId).then((response) => {
-        ls.set('userId', response);
+        /* ls.set('userId', response); */
         setUserName(response.name);
         setUserEmail(response.email);
         setUserPassword(response.password);
