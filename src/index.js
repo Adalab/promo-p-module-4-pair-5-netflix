@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const Database = require('better-sqlite3');
+const { json } = require('express/lib/response');
 
 // set up server
 const server = express();
@@ -145,8 +146,39 @@ server.post('/sign-up', (req, res) => {
   }
 });
 
+//unfinished exercise 4.6
 server.post('/profile', (req, res) => {
   console.log(req.body.name);
+});
+
+//receives parameters from getUserMoviesFromApi and responds with te user favorite movies:
+server.get('/user/movies', (req, res) => {
+  // preparamos la query para obtener los movieIds
+  const movieIdsQuery = db.prepare(
+    'SELECT movieId FROM rel_movies_users WHERE userId = ?'
+  );
+  // obtenemos el id de la usuaria
+  const userId = req.header('user-id');
+  // ejecutamos la query
+  const movieIds = movieIdsQuery.all(userId); // que nos devuelve algo como [{ movieId: 1 }, { movieId: 2 }];
+
+  // obtenemos las interrogaciones separadas por comas
+  const moviesIdsQuestions = movieIds.map((id) => '?').join(', '); // que nos devuelve '?, ?'
+  // preparamos la segunda query para obtener todos los datos de las películas
+  const moviesQuery = db.prepare(
+    `SELECT * FROM movies WHERE id IN (${moviesIdsQuestions})`
+  );
+
+  // convertimos el array de objetos de id anterior a un array de números
+  const moviesIdsNumbers = movieIds.map((movie) => movie.movieId); // que nos devuelve [1.0, 2.0]
+  // ejecutamos segunda la query
+  const movies = moviesQuery.all(moviesIdsNumbers);
+
+  // respondemos a la petición con
+  res.json({
+    success: true,
+    movies: movies,
+  });
 });
 
 //static servers set up:
