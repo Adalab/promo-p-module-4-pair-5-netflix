@@ -108,10 +108,14 @@ server.post('/login', (req, res) => {
 
 server.post('/sign-up', (req, res) => {
   //antes de insertar a la usuaria en la base de datos, hacemos un select para comprobar si ya existe.
-  const query = db.prepare('INSERT INTO users (email, password) VALUES (?, ?)');
-
-  const result = query.run(req.body.email, req.body.password);
-  if (result.changes === 1) {
+  const query1 = db.prepare(`SELECT * FROM users WHERE email =  ?`);
+  const userFound = query1.get(req.body.email);
+  if (userFound === undefined) {
+    const query2 = db.prepare(
+      'INSERT INTO users (email, password) VALUES (?, ?)'
+    );
+    const result = query2.run(req.body.email, req.body.password);
+    console.log(result);
     res.json({
       success: true,
       userId: result.lastInsertRowid,
@@ -119,7 +123,7 @@ server.post('/sign-up', (req, res) => {
   } else {
     res.json({
       success: false,
-      errorMessage: 'No se ha podido registrar',
+      errorMessage: 'Usuaria ya existente',
     });
   }
 });
